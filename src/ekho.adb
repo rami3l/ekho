@@ -2,6 +2,7 @@ with Libekho.Client;
 with Libekho.Server;
 with Ada.Text_IO;  use Ada.Text_IO;
 with GNAT.Sockets; use GNAT.Sockets;
+with GNAT.Exception_Traces;
 
 procedure Ekho is
    Addr : Sock_Addr_Type :=
@@ -25,19 +26,18 @@ procedure Ekho is
    -- end Ping;
 
    task body Pong is
-      Listener : Libekho.Server.Server := Libekho.Server.Bind (Addr);
+      Listener    : Libekho.Server.Server;
+      Peer_Socket : Socket_Type;
+      Peer_Addr   : Sock_Addr_Type;
    begin
+      Libekho.Server.Bind (Addr, Listener);
       accept Start;
-      Put_Line ("Server: got it here socket...");
+      Put_Line ("Server: Accepting peer socket...");
+      Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
+      Put_Line ("Server: Peer socket accepted.");
       declare
-         Peer_Socket : Socket_Type;
-         Peer_Addr   : Sock_Addr_Type;
-         Received    : String := "";
+         Received : String := String'Input (Stream (Peer_Socket));
       begin
-         Put_Line ("Server: Accepting peer socket...");
-         Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
-         Put_Line ("Server: Peer socket accepted.");
-         Received := String'Input (Stream (Peer_Socket));
          Put_Line ("Server Received: " & Received);
          Put_Line ("Server: Closing peer socket...");
          Close_Socket (Peer_Socket);
@@ -46,6 +46,7 @@ procedure Ekho is
    end Pong;
 
 begin
+   GNAT.Exception_Traces.Trace_On (GNAT.Exception_Traces.Every_Raise);
    Pong.Start;
    Pong.Stop;
 end Ekho;

@@ -8,7 +8,7 @@ package Libekho.Server is
     end record;
     -- https://doc.rust-lang.org/std/net/struct.TcpListener.html
 
-    function Bind (Addr : Sock_Addr_Type) return Server;
+    procedure Bind (Addr : Sock_Addr_Type; Res : out Server);
 
     procedure Accept_Incoming
        (Self      : in     Server; Peer_Socket : out Socket_Type;

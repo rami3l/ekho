@@ -3,8 +3,7 @@ with Ada.Text_IO;  use Ada.Text_IO;
 with GNAT.Sockets; use GNAT.Sockets;
 
 package body Libekho.Server is
-    function Bind (Addr : Sock_Addr_Type) return Server is
-        Res : Server;
+    procedure Bind (Addr : Sock_Addr_Type; Res : out Server) is
     begin
         Res.Addr := Addr;
         Put_Line ("Server launched!");
@@ -17,7 +16,6 @@ package body Libekho.Server is
         Bind_Socket (Res.Channel, Res.Addr);
         Put_Line ("Server: Listening socket...");
         Listen_Socket (Res.Channel);
-        return Res;
     end Bind;
 
     procedure Accept_Incoming
@@ -26,7 +24,6 @@ package body Libekho.Server is
     is
     begin
         Accept_Socket (Self.Channel, Peer_Socket, Peer_Addr);
-        Put_Line ("Server: Socket accepted.");
     end Accept_Incoming;
 
     overriding procedure Finalize (Self : in out Server) is
