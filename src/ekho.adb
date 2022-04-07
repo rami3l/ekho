@@ -20,10 +20,6 @@ procedure Ekho is
 
    task body Ping is
       Channel : Socket_Type;
-
-      Listener    : Libekho.Listener.Listener;
-      Peer_Socket : Socket_Type;
-      Peer_Addr   : Sock_Addr_Type;
    begin
       accept Start;
       Put_Line ("Ping launched!");
