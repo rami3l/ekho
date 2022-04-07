@@ -8,6 +8,11 @@ procedure Ekho is
       entry Stop;
    end Ping;
 
+   task Pong is
+      entry Start;
+      entry Stop;
+   end Pong;
+
    task body Ping is
    begin
       accept Start;
@@ -15,20 +20,15 @@ procedure Ekho is
       accept Stop;
    end Ping;
 
-   task Pong is
-      entry Start;
-      entry Stop;
-   end Pong;
-
    task body Pong is
    begin
       accept Start;
-      Ping.Start;
       Libekho.Server.Launch;
-      Ping.Stop;
       accept Stop;
    end Pong;
 begin
    Pong.Start;
+   Ping.Start;
+   Ping.Stop;
    Pong.Stop;
 end Ekho;
