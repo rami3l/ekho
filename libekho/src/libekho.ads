@@ -6,8 +6,7 @@ package Libekho is
     type Message (Size : Message_Size_Type) is record
         Str : String (1 .. Size);
     end record with
-        Write => Write,
-        Read  => Read;
+        Write => Write;
 
     type Message_Access is access Message;
 
@@ -17,10 +16,6 @@ package Libekho is
     procedure Write
        (Stream :    not null access Ada.Streams.Root_Stream_Type'Class;
         Item   : in Message);
-
-    procedure Read
-       (Stream :     not null access Ada.Streams.Root_Stream_Type'Class;
-        Item   : out Message);
 
     function Read
        (Stream : not null access Ada.Streams.Root_Stream_Type'Class)

@@ -31,9 +31,8 @@ procedure Ekho is
       Put_Line ("Ping: Sending message...");
       Message'Write (Stream (Channel), To_Message ("HeLlo the S0ck3t w0r1d!"));
       declare
-         Received : Message (Size => 23);
+         Received : Message := Read (Stream (Channel));
       begin
-         Message'Read (Stream (Channel), Received);
          Put_Line ("Ping Received: " & Received.Str);
          Put_Line ("Ping: Closing socket...");
          Close_Socket (Channel);
