@@ -1,3 +1,8 @@
 {
-  "ada.projectFile": "ekho.gpr"
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
+  "triggerTaskOnSave.tasks": {
+    "ada: Build current project": ["*.ads", "*.adb", "alire.toml", "*.gpr"]
+  }
 }
