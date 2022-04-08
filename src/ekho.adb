@@ -33,8 +33,8 @@ procedure Ekho is
          declare
             Got : String := Get_Line;
          begin
-            exit when Got = "";
             Message'Write (Stream (Channel), To_Message (Got));
+            exit when Got = "";
          end;
          declare
             Received : Message := Read (Stream (Channel));
@@ -44,6 +44,7 @@ procedure Ekho is
       end loop;
       Put_Line ("Ping: Closing socket...");
       Close_Socket (Channel);
+      Put_Line ("Ping: Stopping...");
       accept Stop;
    end Ping;
 
@@ -58,20 +59,17 @@ procedure Ekho is
       Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
       Put_Line ("Pong: Peer socket accepted.");
       loop
-         select
-            accept Stop;
-            Put_Line ("Pong: Closing peer socket...");
-            Close_Socket (Peer_Socket);
-            exit;
-         else
-            declare
-               Received : Message := Read (Stream (Peer_Socket));
-            begin
-               Put_Line ("Pong Received: " & Received.Str);
-               Message'Write (Stream (Peer_Socket), Received);
-            end;
-         end select;
+         declare
+            Received : Message := Read (Stream (Peer_Socket));
+         begin
+            Put_Line ("Pong Received: " & Received.Str);
+            Message'Write (Stream (Peer_Socket), Received);
+            exit when Received.Str = "";
+         end;
       end loop;
+      accept Stop;
+      Put_Line ("Pong: Closing peer socket...");
+      Close_Socket (Peer_Socket);
    end Pong;
 
 begin
