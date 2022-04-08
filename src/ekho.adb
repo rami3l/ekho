@@ -28,16 +28,23 @@ procedure Ekho is
       Create_Socket (Channel);
       Put_Line ("Ping: Connecting socket " & Channel'Image);
       Connect_Socket (Socket => Channel, Server => Addr);
-      Put_Line ("Ping: Sending message...");
-      Message'Write (Stream (Channel), To_Message ("HeLlo the S0ck3t w0r1d!"));
-      declare
-         Received : Message := Read (Stream (Channel));
-      begin
-         Put_Line ("Ping Received: " & Received.Str);
-         Put_Line ("Ping: Closing socket...");
-         Close_Socket (Channel);
-         accept Stop;
-      end;
+      loop
+         Put ("ping> ");
+         declare
+            Got : String := Get_Line;
+         begin
+            exit when Got = "";
+            Message'Write (Stream (Channel), To_Message (Got));
+         end;
+         declare
+            Received : Message := Read (Stream (Channel));
+         begin
+            Put_Line ("Ping Received: " & Received.Str);
+         end;
+      end loop;
+      Put_Line ("Ping: Closing socket...");
+      Close_Socket (Channel);
+      accept Stop;
    end Ping;
 
    task body Pong is
@@ -50,15 +57,21 @@ procedure Ekho is
       Put_Line ("Pong: Accepting peer socket...");
       Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
       Put_Line ("Pong: Peer socket accepted.");
-      declare
-         Received : Message := Read (Stream (Peer_Socket));
-      begin
-         Put_Line ("Pong Received: " & Received.Str);
-         Message'Write (Stream (Peer_Socket), Received);
-         Put_Line ("Pong: Closing peer socket...");
-         Close_Socket (Peer_Socket);
-      end;
-      accept Stop;
+      loop
+         select
+            accept Stop;
+            Put_Line ("Pong: Closing peer socket...");
+            Close_Socket (Peer_Socket);
+            exit;
+         else
+            declare
+               Received : Message := Read (Stream (Peer_Socket));
+            begin
+               Put_Line ("Pong Received: " & Received.Str);
+               Message'Write (Stream (Peer_Socket), Received);
+            end;
+         end select;
+      end loop;
    end Pong;
 
 begin
