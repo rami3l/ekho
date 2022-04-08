@@ -3,6 +3,7 @@ with Ada.Text_IO;           use Ada.Text_IO;
 with GNAT.Exception_Traces;
 with GNAT.Sockets;          use GNAT.Sockets;
 with Libekho.Listener;
+with Libekho;               use Libekho;
 
 procedure Ekho is
    Addr : Sock_Addr_Type :=
@@ -28,12 +29,12 @@ procedure Ekho is
       Put_Line ("Ping: Connecting socket " & Channel'Image);
       Connect_Socket (Socket => Channel, Server => Addr);
       Put_Line ("Ping: Sending message...");
-      Unbounded_String'Write
-        (Stream (Channel), To_Unbounded_String ("HeLlo the S0ck3t w0r1d!"));
+      Message'Write (Stream (Channel), To_Message ("HeLlo the S0ck3t w0r1d!"));
       declare
-         Received : String := String'Input (Stream (Channel));
+         Received : Message (Size => 23);
       begin
-         Put_Line ("Ping Received: " & Received);
+         Message'Read (Stream (Channel), Received);
+         Put_Line ("Ping Received: " & Received.Str);
          Put_Line ("Ping: Closing socket...");
          Close_Socket (Channel);
          accept Stop;
@@ -51,11 +52,11 @@ procedure Ekho is
       Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
       Put_Line ("Pong: Peer socket accepted.");
       declare
-         Received : String := String'Input (Stream (Peer_Socket));
+         Received : Message (Size => 23);
       begin
-         Put_Line ("Pong Received: " & Received);
-         Unbounded_String'Write
-           (Stream (Peer_Socket), To_Unbounded_String (Received));
+         Message'Read (Stream (Peer_Socket), Received);
+         Put_Line ("Pong Received: " & Received.Str);
+         Message'Write (Stream (Peer_Socket), Received);
          Put_Line ("Pong: Closing peer socket...");
          Close_Socket (Peer_Socket);
       end;
