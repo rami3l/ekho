@@ -35,4 +35,19 @@ package body Libekho is
             end;
         end if;
     end Read;
+
+    function Read
+       (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+        return Message
+    is
+        Size : Message_Size_Type;
+    begin
+        Message_Size_Type'Read (Stream, Size);
+        declare
+            Str : String (1 .. Size);
+        begin
+            String'Read (Stream, Str);
+            return (Size => Size, Str => Str);
+        end;
+    end Read;
 end Libekho;

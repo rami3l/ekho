@@ -9,6 +9,8 @@ package Libekho is
         Write => Write,
         Read  => Read;
 
+    type Message_Access is access Message;
+
     function To_Message (Str : in String) return Message with
         Pre => Str'Length in Message_Size_Type;
 
@@ -19,4 +21,8 @@ package Libekho is
     procedure Read
        (Stream :     not null access Ada.Streams.Root_Stream_Type'Class;
         Item   : out Message);
+
+    function Read
+       (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+        return Message;
 end Libekho;

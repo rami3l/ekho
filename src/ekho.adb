@@ -52,9 +52,8 @@ procedure Ekho is
       Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
       Put_Line ("Pong: Peer socket accepted.");
       declare
-         Received : Message (Size => 23);
+         Received : Message := Read (Stream (Peer_Socket));
       begin
-         Message'Read (Stream (Peer_Socket), Received);
          Put_Line ("Pong Received: " & Received.Str);
          Message'Write (Stream (Peer_Socket), Received);
          Put_Line ("Pong: Closing peer socket...");
