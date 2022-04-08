@@ -2,10 +2,7 @@ with Ada.Streams;
 
 package body Libekho is
     function To_Message (Str : in String) return Message is
-        Len : Message_Size_Type := Str'Length;
-    begin
-        return (Size => Len, Str => Str);
-    end To_Message;
+       (Size => Str'Length, Str => Str);
 
     procedure Write
        (Stream :    not null access Ada.Streams.Root_Stream_Type'Class;

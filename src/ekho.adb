@@ -42,10 +42,9 @@ procedure Ekho is
             Put_Line ("Ping Received: " & Received.Str);
          end;
       end loop;
+      accept Stop;
       Put_Line ("Ping: Closing socket...");
       Close_Socket (Channel);
-      Put_Line ("Ping: Stopping...");
-      accept Stop;
    end Ping;
 
    task body Pong is
