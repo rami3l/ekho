@@ -4,7 +4,7 @@ project Libekho is
    for Library_Name use "Libekho";
    for Library_Version use Project'Library_Name & ".so." & Libekho_Config.Crate_Version;
 
-   for Source_Dirs use ("src");
+   for Source_Dirs use ("src", "generated");
    for Object_Dir use "obj";
    for Create_Missing_Dirs use "True";
    for Library_Dir use "lib";
@@ -64,12 +64,12 @@ project Libekho is
    case Build_Mode is
       when "optimize" =>
          Build_Switches := ("-O3",     -- Optimization
-                            "-gnatn"  -- Enable inlining
-                           );
+                            "-gnatn",  -- Enable inlining
+                            "-gnat2022");
       when "debug" =>
          Build_Switches := ("-g",   -- Debug info
-                            "-Og"  -- No optimization
-                           );
+                            "-Og",  -- No optimization
+                            "-gnat2022");
    end case;
 
    package Compiler is

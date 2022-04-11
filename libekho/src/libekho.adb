@@ -1,6 +1,14 @@
 with Ada.Streams;
+with RFLX.RFLX_Types;
+with RFLX.RFLX_Builtin_Types;
+with RFLX.Ekho.Packet;
+with Ada.Unchecked_Conversion;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Libekho is
+    package Types renames RFLX.RFLX_Types;
+    package Packet renames RFLX.Ekho.Packet;
+
     function To_Message (Str : in String) return Message is
        (Size => Str'Length, Str => Str);
 
@@ -8,11 +16,21 @@ package body Libekho is
        (Stream :    not null access Ada.Streams.Root_Stream_Type'Class;
         Item   : in Message)
     is
+        Buffer : Types.Bytes_Ptr :=
+           new Types.Bytes (Types.Index'First .. Types.Index'Last);
+        -- TODO: What about dealloc?
+        Context : Packet.Context;
     begin
-        Message_Size_Type'Write (Stream, Item.Size);
+        -- Put_Line("BUFFER: " & Buffer.all'Image);
+        Packet.Initialize (Context, Buffer);
+        Put_Line("BUFFER: " & Buffer.all'Image);
+        Packet.Set_Size (Context, RFLX.Ekho.Message_Size_Type (Item.Size));
         if Item.Size /= 0 then
-            String'Write (Stream, Item.Str);
+            Packet.Set_Str
+               (Context, (for C of Item.Str => Character'Pos (C)));
         end if;
+        Put_Line("BUFFER: " & Buffer.all'Image);
+        Types.Bytes'Write(Stream, Buffer.all(1..Types.Index(Item.Size)));
     end Write;
     -- https://stackoverflow.com/a/22770989
 
