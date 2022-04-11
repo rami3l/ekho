@@ -4,14 +4,15 @@
   },
   "triggerTaskOnSave.tasks": {
     "ada: Build current project": ["*.ads", "*.adb", "alire.toml", "*.gpr"]
-  },
+  }
+  /*
   "emeraldwalk.runonsave": {
     "commands": [
       {
-        "shell": "sh",
         "match": "\\.rflx$",
-        "cmd": "rflx check '${file}.'"
+        "cmd": "rflx check '${file}'"
       }
     ]
   }
+  */
 }

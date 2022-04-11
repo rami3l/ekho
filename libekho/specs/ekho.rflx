@@ -5,6 +5,6 @@ package Ekho is
       message
          Size : Message_Size_Type;
          Str : Opaque
-            with Size => Size;
+            with Size => 8 * Size;
       end message;
 end Ekho;

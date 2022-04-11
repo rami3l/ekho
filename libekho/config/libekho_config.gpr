@@ -1,3 +1,0 @@
-abstract project Libekho_Config is
-   Crate_Version := "0.0.0";
-end Libekho_Config;

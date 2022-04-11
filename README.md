@@ -12,4 +12,4 @@ To install `RecordFlux` with [`pipx`](https://github.com/pypa/pipx), you can try
 pipx install git+https://github.com/Componolit/RecordFlux
 ```
 
-With [`alire`] installed, just execute: `alire run`.
+With [`alire`] installed, just execute: `alr update && alr run`.
