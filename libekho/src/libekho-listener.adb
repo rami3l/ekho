@@ -10,9 +10,10 @@ package body Libekho.Listener is
         Put_Line ("Listener: Creating socket and setting up...");
         Create_Socket (Res.Channel);
         Set_Socket_Option (Res.Channel, Socket_Level, (Reuse_Address, True));
-        Put_Line
-           ("Listener: Binding socket " & Res.Channel'Image & " to " &
-            Res.Addr'Image);
+        -- Put_Line
+        --    ("Listener: Binding socket " & Res.Channel'Image & " to " &
+        --     Res.Addr'Image);
+        Put_Line ("Listener: Binding socket...");
         Bind_Socket (Res.Channel, Res.Addr);
         Put_Line ("Listener: Listening socket...");
         Listen_Socket (Res.Channel);

@@ -1,0 +1,10 @@
+package Ekho is
+   type Message_Size_Type is mod 256;
+
+   type Packet is
+      message
+         Size : Message_Size_Type;
+         Str : Opaque
+            with Size => Size;
+      end message;
+end Ekho;

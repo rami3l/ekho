@@ -26,7 +26,8 @@ procedure Ekho is
       Put_Line ("Ping launched!");
       Put_Line ("Ping: Creating socket...");
       Create_Socket (Channel);
-      Put_Line ("Ping: Connecting socket " & Channel'Image);
+      -- Put_Line ("Ping: Connecting socket " & Channel'Image);
+      Put_Line ("Ping: Connecting socket...");
       Connect_Socket (Socket => Channel, Server => Addr);
       loop
          Put ("ping> ");
