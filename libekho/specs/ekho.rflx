@@ -1,9 +1,9 @@
 package Ekho is
-   type Message_Size_Type is mod 256;
+   type Str_Size is mod 256;
 
    type Packet is
       message
-         Size : Message_Size_Type;
+         Size : Str_Size;
          Str : Opaque
             with Size => 8 * Size;
       end message;

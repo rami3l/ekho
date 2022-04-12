@@ -1,9 +1,6 @@
-with Ada.Streams;
-with RFLX.RFLX_Types;
-with RFLX.RFLX_Builtin_Types;
 with RFLX.Ekho.Packet;
-with Ada.Unchecked_Conversion;
-with Ada.Text_IO; use Ada.Text_IO;
+with RFLX.Ekho; use RFLX.Ekho;
+with RFLX.RFLX_Types;
 
 package body Libekho is
     package Types renames RFLX.RFLX_Types;
@@ -17,20 +14,19 @@ package body Libekho is
         Item   : in Message)
     is
         Buffer : Types.Bytes_Ptr :=
-           new Types.Bytes (Types.Index'First .. Types.Index'Last);
+           new Types.Bytes (Types.Index'First .. Types.Index (255));
         -- TODO: What about dealloc?
         Context : Packet.Context;
     begin
-        -- Put_Line("BUFFER: " & Buffer.all'Image);
         Packet.Initialize (Context, Buffer);
-        Put_Line("BUFFER: " & Buffer.all'Image);
-        Packet.Set_Size (Context, RFLX.Ekho.Message_Size_Type (Item.Size));
+        Packet.Set_Size (Context, Str_Size(Item.Size));
         if Item.Size /= 0 then
             Packet.Set_Str
-               (Context, (for C of Item.Str => Character'Pos (C)));
+               (Context, [for C of Item.Str => Character'Pos (C)]);
         end if;
-        Put_Line("BUFFER: " & Buffer.all'Image);
-        Types.Bytes'Write(Stream, Buffer.all(1..Types.Index(Item.Size)));
+        Packet.Take_Buffer (Context, Buffer);
+        -- Ada.Text_IO.Put_Line ("TRUNCATED BUFFER: "  &  Buffer.all(1..Types.Index(1 + Item.Size))'Image);
+        Types.Bytes'Write(Stream, Buffer.all(1..Types.Index(1 + Item.Size)));
     end Write;
     -- https://stackoverflow.com/a/22770989
 
@@ -38,14 +34,14 @@ package body Libekho is
        (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
         return Message
     is
-        Size : Message_Size_Type;
+        Size : Str_Size;
     begin
-        Message_Size_Type'Read (Stream, Size);
+        Str_Size'Read (Stream, Size);
         declare
-            Str : String (1 .. Size);
+            Str : String (1 .. Integer(Size));
         begin
             String'Read (Stream, Str);
-            return (Size => Size, Str => Str);
+            return (Size => Message_Size_Type(Size), Str => Str);
             -- NOTE: Returning to the Secondary Stack.
             -- https://docs.adacore.com/gnat_ugx-docs/html/gnat_ugx/gnat_ugx/the_stacks.html
         end;
