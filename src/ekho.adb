@@ -1,4 +1,3 @@
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO;           use Ada.Text_IO;
 with GNAT.Exception_Traces;
 with GNAT.Sockets;          use GNAT.Sockets;
@@ -6,7 +5,7 @@ with Libekho.Listener;
 with Libekho;               use Libekho;
 
 procedure Ekho is
-   Addr : Sock_Addr_Type :=
+   Addr : constant Sock_Addr_Type :=
      (Addr => Inet_Addr ("127.0.0.1"), Port => 55_660, others => <>);
 
    task Ping is
@@ -32,13 +31,13 @@ procedure Ekho is
       loop
          Put ("ping> ");
          declare
-            Got : String := Get_Line;
+            Got : constant String := Get_Line;
          begin
             Message'Write (Stream (Channel), To_Message (Got));
             exit when Got = "";
          end;
          declare
-            Received : Message := Read (Stream (Channel));
+            Received : constant Message := Read (Stream (Channel));
          begin
             Put_Line ("Ping Received: " & Received.Str);
          end;
@@ -60,7 +59,7 @@ procedure Ekho is
       Put_Line ("Pong: Peer socket accepted.");
       loop
          declare
-            Received : Message := Read (Stream (Peer_Socket));
+            Received : constant Message := Read (Stream (Peer_Socket));
          begin
             Put_Line ("Pong Received: " & Received.Str);
             Message'Write (Stream (Peer_Socket), Received);
