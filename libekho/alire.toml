@@ -5,3 +5,7 @@ version = "0.0.0"
 authors = ["rami3l"]
 maintainers = ["rami3l <rami3l@outlook.com>"]
 maintainers-logins = ["rami3l"]
+
+# [[actions]]
+# type = "pre-build"
+# command = ["sh", "-c", "rflx generate -d ./generated ./specs/*.rflx"]
