@@ -1,3 +1,4 @@
+with Ada.Unchecked_Deallocation;
 with RFLX.Ekho.Packet;
 with RFLX.Ekho; use RFLX.Ekho;
 with RFLX.RFLX_Types;
@@ -15,8 +16,8 @@ package body Libekho is
     is
         Buffer : Types.Bytes_Ptr :=
            new Types.Bytes (Types.Index'First .. Types.Index (255));
-        -- TODO: What about dealloc?
         Context : Packet.Context;
+        procedure Free is new Ada.Unchecked_Deallocation(Types.Bytes, Types.Bytes_Ptr);
     begin
         Packet.Initialize (Context, Buffer);
         Packet.Set_Size (Context, Str_Size(Item.Size));
@@ -26,7 +27,8 @@ package body Libekho is
         end if;
         Packet.Take_Buffer (Context, Buffer);
         -- Ada.Text_IO.Put_Line ("TRUNCATED BUFFER: "  &  Buffer.all(1..Types.Index(1 + Item.Size))'Image);
-        Types.Bytes'Write(Stream, Buffer.all(1..Types.Index(1 + Item.Size)));
+        Types.Bytes'Write (Stream, Buffer.all(1..Types.Index(1 + Item.Size)));
+        Free (Buffer);
     end Write;
     -- https://stackoverflow.com/a/22770989
 

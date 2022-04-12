@@ -1,8 +1,8 @@
-with Ada.Text_IO;           use Ada.Text_IO;
+with Ada.Text_IO;  use Ada.Text_IO;
 with GNAT.Exception_Traces;
-with GNAT.Sockets;          use GNAT.Sockets;
+with GNAT.Sockets; use GNAT.Sockets;
 with Libekho.Listener;
-with Libekho;               use Libekho;
+with Libekho;      use Libekho;
 
 procedure Ekho is
    Addr : constant Sock_Addr_Type :=
