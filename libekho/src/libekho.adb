@@ -1,12 +1,9 @@
 with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;
+with Libekho.Compat; use Libekho.Compat;
 with RFLX.Ekho.Packet;
 with RFLX.Ekho; use RFLX.Ekho;
-with RFLX.RFLX_Builtin_Types;
 with RFLX.RFLX_Types;
-with Libekho.Compat; use Libekho.Compat;
-
-with Ada.Text_IO;
 
 package body Libekho is
    package Types renames RFLX.RFLX_Types;
@@ -54,15 +51,19 @@ package body Libekho is
       Read (Stream.all, Size, Last);
       Buffer(1) := Size(1);
       Size_Offset := Stream_Element_Offset(Size(1));
-      Ada.Text_IO.Put_Line("SIZE: " & Size'Image);
+      -- Ada.Text_IO.Put_Line("SIZE: " & Size'Image);
       Read (Stream.all, Buffer(2..(1+Size_Offset)), Last);
-      Ada.Text_IO.Put_Line("BUFFER: " & Buffer(1..(1+ Size_Offset))'Image);
+      -- Ada.Text_IO.Put_Line("BUFFER: " & Buffer(1..(1+ Size_Offset))'Image);
+      if Size_Offset = 0 then
+         return (Size => 0, Str => "");
+      end if;
       declare
          Bytes_Buffer : Types.Bytes_Ptr := new Types.Bytes'(To_RFLX_Bytes(Buffer(1..(1+Size_Offset))));
       begin
-         Ada.Text_IO.Put_Line("BYTES_BUFFER: " & Bytes_Buffer.all'Image);
-         Packet.Initialize (Context, Bytes_Buffer);
+         -- Ada.Text_IO.Put_Line("BYTES_BUFFER: " & Bytes_Buffer.all'Image);
+         Packet.Initialize (Context, Bytes_Buffer, Written_Last => Types.To_Last_Bit_Index (Bytes_Buffer'Last));
          Packet.Verify_Message (Context);
+         pragma Assert (Packet.Structural_Valid_Message (Context));
          declare
             Size : constant Message_Size_Type := Message_Size_Type(Size_Offset);
             Str_Bytes : Types.Bytes (1.. Types.Index(Size));
