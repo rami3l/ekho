@@ -10,8 +10,9 @@ package Libekho.Listener is
 
    procedure Bind (Addr : Sock_Addr_Type; Res : out Listener);
 
-   procedure Accept_Incoming
-     (Self      : in     Listener; Peer_Socket : out Socket_Type;
+   procedure Receive
+     (Self      : in     Listener; Item : out Ada.Streams.Stream_Element_Array;
+      Last      :    out Ada.Streams.Stream_Element_Offset;
       Peer_Addr :    out Sock_Addr_Type);
 
    overriding procedure Finalize (Self : in out Listener);

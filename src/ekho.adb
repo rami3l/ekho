@@ -3,10 +3,13 @@ with GNAT.Exception_Traces;
 with GNAT.Sockets; use GNAT.Sockets;
 with Libekho.Listener;
 with Libekho;      use Libekho;
+with Ada.Streams;  use Ada.Streams;
 
 procedure Ekho is
-   Addr : constant Sock_Addr_Type :=
+   Ping_Addr : constant Sock_Addr_Type :=
      (Addr => Inet_Addr ("127.0.0.1"), Port => 55_660, others => <>);
+   Pong_Addr : constant Sock_Addr_Type :=
+     (Addr => Inet_Addr ("127.0.0.1"), Port => 55_661, others => <>);
 
    task Ping is
       entry Start;
@@ -20,26 +23,30 @@ procedure Ekho is
 
    task body Ping is
       Channel : Socket_Type;
+      Buffer  : Stream_Element_Array (1 .. 256);
+      Last    : Stream_Element_Offset;
    begin
       accept Start;
       Put_Line ("Ping launched!");
       Put_Line ("Ping: Creating socket...");
-      Create_Socket (Channel);
-      -- Put_Line ("Ping: Connecting socket " & Channel'Image);
-      Put_Line ("Ping: Connecting socket...");
-      Connect_Socket (Socket => Channel, Server => Addr);
+      Create_Socket (Channel, Mode => Socket_Datagram);
+      Set_Socket_Option
+        (Channel, Level => Socket_Level, Option => (Reuse_Address, True));
+      Bind_Socket (Channel, Ping_Addr);
       loop
          Put ("ping> ");
          declare
             Got : constant String := Get_Line;
          begin
-            Message'Write (Stream (Channel), To_Message (Got));
+            Send_Socket
+              (Channel, Write (To_Message (Got)), Last, To => Pong_Addr);
             exit when Got = "";
          end;
+         Receive_Socket (Channel, Buffer, Last);
          declare
-            Received : constant Message := Read (Stream (Channel));
+            Got : constant Message := Read (Buffer, Last);
          begin
-            Put_Line ("Ping Received: " & Received.Str);
+            Put_Line ("Ping Received: " & Got.Str);
          end;
       end loop;
       accept Stop;
@@ -48,27 +55,26 @@ procedure Ekho is
    end Ping;
 
    task body Pong is
-      Listener    : Libekho.Listener.Listener;
-      Peer_Socket : Socket_Type;
-      Peer_Addr   : Sock_Addr_Type;
+      Listener  : Libekho.Listener.Listener;
+      Buffer    : Stream_Element_Array (1 .. 256);
+      Last      : Stream_Element_Offset;
+      Peer_Addr : Sock_Addr_Type;
    begin
-      Libekho.Listener.Bind (Addr, Listener);
+      Libekho.Listener.Bind (Pong_Addr, Listener);
       accept Start;
-      Put_Line ("Pong: Accepting peer socket...");
-      Listener.Accept_Incoming (Peer_Socket, Peer_Addr);
-      Put_Line ("Pong: Peer socket accepted.");
+
       loop
+         Receive_Socket (Listener.Channel, Buffer, Last, From => Peer_Addr);
          declare
-            Received : constant Message := Read (Stream (Peer_Socket));
+            Got : constant Message := Read (Buffer, Last);
          begin
-            Put_Line ("Pong Received: " & Received.Str);
-            Message'Write (Stream (Peer_Socket), Received);
-            exit when Received.Str = "";
+            Put_Line ("Pong Received: " & Got.Str);
+            Send_Socket (Listener.Channel, Write (Got), Last, To => Peer_Addr);
+            exit when Got.Str = "";
          end;
       end loop;
       accept Stop;
       Put_Line ("Pong: Closing peer socket...");
-      Close_Socket (Peer_Socket);
    end Pong;
 
 begin

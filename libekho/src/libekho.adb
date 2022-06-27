@@ -1,9 +1,9 @@
-with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;
 with Libekho.Compat; use Libekho.Compat;
 with RFLX.Ekho.Packet;
 with RFLX.Ekho; use RFLX.Ekho;
 with RFLX.RFLX_Types;
+with RFLX.RFLX_Builtin_Types; use RFLX.RFLX_Builtin_Types;
 
 package body Libekho is
    package Types renames RFLX.RFLX_Types;
@@ -12,13 +12,12 @@ package body Libekho is
    function To_Message (Str : in String) return Message is
      (Size => Str'Length, Str => Str);
 
-   procedure Write
-     (Stream :    not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : in Message)
+   function Write (Item : in Message) return Stream_Element_Array
    is
       Buffer : Types.Bytes_Ptr :=
         new Types.Bytes (1 .. Types.Index (1 + 255));
       Context : Packet.Context;
+      Res : Stream_Element_Array(1..256);
       procedure Free is new Ada.Unchecked_Deallocation
         (Types.Bytes, Types.Bytes_Ptr);
    begin
@@ -28,49 +27,41 @@ package body Libekho is
          Packet.Set_Str (Context, [for C of Item.Str => Character'Pos (C)]);
       end if;
       Packet.Take_Buffer (Context, Buffer);
-      -- Ada.Text_IO.Put_Line ("TRUNCATED BUFFER: "  &  Buffer.all(1..Types.Index(1 + Item.Size))'Image);
-      Types.Bytes'Write
-        (Stream, Buffer.all (1 .. Types.Index (1 + Item.Size)));
+      Res := To_Ada_Stream(Buffer.all);
       Free (Buffer);
+      return Res;
    end Write;
    -- https://stackoverflow.com/a/22770989
 
    function Read
-     (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+     (Buffer : in Stream_Element_Array; Last : in Stream_Element_Offset )
       return Message
    is
-      Size : Stream_Element_Array (1 .. 1);
-      Size_Offset: Stream_Element_Offset;
-      Buffer : Stream_Element_Array (1 .. (1+255));
-      Last : Stream_Element_Offset;
       Context : Packet.Context;
 
       procedure Free is new Ada.Unchecked_Deallocation
         (Types.Bytes, Types.Bytes_Ptr);
    begin
-      Read (Stream.all, Size, Last);
-      Buffer(1) := Size(1);
-      Size_Offset := Stream_Element_Offset(Size(1));
-      -- Ada.Text_IO.Put_Line("SIZE: " & Size'Image);
-      Read (Stream.all, Buffer(2..(1+Size_Offset)), Last);
-      -- Ada.Text_IO.Put_Line("BUFFER: " & Buffer(1..(1+ Size_Offset))'Image);
-      if Size_Offset = 0 then
+      declare
+         Bytes_Buffer : Types.Bytes_Ptr := new Types.Bytes'(To_RFLX_Bytes(Buffer(1..Last)));
+         Size : constant Byte :=  Bytes_Buffer.all(1);
+      begin
+      if Size = 0 then
          return (Size => 0, Str => "");
       end if;
-      declare
-         Bytes_Buffer : Types.Bytes_Ptr := new Types.Bytes'(To_RFLX_Bytes(Buffer(1..(1+Size_Offset))));
-      begin
          -- Ada.Text_IO.Put_Line("BYTES_BUFFER: " & Bytes_Buffer.all'Image);
-         Packet.Initialize (Context, Bytes_Buffer, Written_Last => Types.To_Last_Bit_Index (Bytes_Buffer'Last));
+         Packet.Initialize (Context, Bytes_Buffer, Written_Last => 8 + Bit_Length(8 * Size));
          Packet.Verify_Message (Context);
+         -- Ada.Text_IO.Put_Line("PACKET: " & Context'Image);
          pragma Assert (Packet.Structural_Valid_Message (Context));
          declare
-            Size : constant Message_Size_Type := Message_Size_Type(Size_Offset);
-            Str_Bytes : Types.Bytes (1.. Types.Index(Size));
+            Size1 : constant Message_Size_Type := Message_Size_Type(Size);
+            Str_Bytes : Types.Bytes (1.. Types.Index(Size1));
          begin
             Packet.Get_Str (Context, Str_Bytes);
             Free (Bytes_Buffer);
-            return (Size => Size, Str => [for C of Str_Bytes => Character'Val (C)]);
+            -- Ada.Text_IO.Put_Line("STR_BYTES: " & Str_Bytes'Image);
+            return (Size => Size1, Str => [for C of Str_Bytes => Character'Val (C)]);
             -- NOTE: Returning to the Secondary Stack.
             -- https://docs.adacore.com/gnat_ugx-docs/html/gnat_ugx/gnat_ugx/the_stacks.html
          end;
